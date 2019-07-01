@@ -331,15 +331,13 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	cv::HoughLinesP(inner_bitwise_and_image, inner_cv_lines, 1, 
 		        CV_PI / 180, HOUGH_THRESHOLD, 50, 5);
 
-	//TODO: replace "xeno" with "puyuma"
-
 	/* convert opencv segment format to puyuma segment format and do segment
 	   side recognization */
-	vector<segment_t> outer_xeno_lines, inner_xeno_lines;
-	edge_side_detect_whole_image(outer_cv_lines, outer_xeno_lines, outer_threshold_image);
-	edge_side_detect_whole_image(inner_cv_lines, inner_xeno_lines, inner_threshold_image);
+	vector<segment_t> outer_lines, inner_lines;
+	edge_side_detect_whole_image(outer_cv_lines, outer_lines, outer_threshold_image);
+	edge_side_detect_whole_image(inner_cv_lines, inner_lines, inner_threshold_image);
 
-	if(outer_xeno_lines.size() == 0 && inner_xeno_lines.size() == 0) {
+	if(outer_lines.size() == 0 && inner_lines.size() == 0) {
 		//send_visualize_image(raw_image, canny_image, outer_threshold_image,
 		//		     inner_threshold_image);
 		cout << "failed to estimate the lane [no segment is found]\n";
@@ -348,8 +346,8 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 
 	/* (step 2) apply homograpgy transform to the detected segments */
 
-	segments_homography_transform(outer_xeno_lines);
-	segments_homography_transform(inner_xeno_lines);
+	segments_homography_transform(outer_lines);
+	segments_homography_transform(inner_lines);
 
 	/* (step 3) histogram filtering */
 
@@ -361,16 +359,16 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	/* generate votes */
 
 	//for white land marks:
-	for(size_t i = 0; i < outer_xeno_lines.size(); i++) {
+	for(size_t i = 0; i < outer_lines.size(); i++) {
 		float d_i, phi_i;
 
-		if(generate_vote(outer_xeno_lines.at(i), d_i, phi_i, WHITE) == false) {
-			outer_xeno_lines.erase(outer_xeno_lines.begin() + i);
+		if(generate_vote(outer_lines.at(i), d_i, phi_i, WHITE) == false) {
+			outer_lines.erase(outer_lines.begin() + i);
 			continue;
 		}
 
-		outer_xeno_lines.at(i).d = d_i;
-		outer_xeno_lines.at(i).phi = phi_i;
+		outer_lines.at(i).d = d_i;
+		outer_lines.at(i).phi = phi_i;
 
 		vote_count++;
 
@@ -380,7 +378,7 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 
 		//drop the vote if it exceeded the boundary
 		if(_i >= HISTOGRAM_R_SIZE || _j >= HISTOGRAM_C_SIZE) {
-			outer_xeno_lines.erase(outer_xeno_lines.begin() + i) ;
+			outer_lines.erase(outer_lines.begin() + i) ;
 			continue;	
 		}
 
@@ -390,16 +388,16 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	}
 
 	//for yellow land marks:
-	for(size_t i = 0; i < inner_xeno_lines.size(); i++) {
+	for(size_t i = 0; i < inner_lines.size(); i++) {
 		float d_i, phi_i;
 
-		if(generate_vote(inner_xeno_lines.at(i), d_i, phi_i, YELLOW) == false) {
-			inner_xeno_lines.erase(inner_xeno_lines.begin() + i);
+		if(generate_vote(inner_lines.at(i), d_i, phi_i, YELLOW) == false) {
+			inner_lines.erase(inner_lines.begin() + i);
 			continue;
 		}
 
-		inner_xeno_lines.at(i).d = d_i;
-		inner_xeno_lines.at(i).phi = phi_i;
+		inner_lines.at(i).d = d_i;
+		inner_lines.at(i).phi = phi_i;
 
 		vote_count++;
 
@@ -409,7 +407,7 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 
 		//drop the vote if it exceeded the boundary
 		if(_i >= HISTOGRAM_R_SIZE || _j >= HISTOGRAM_C_SIZE) {
-			inner_xeno_lines.erase(inner_xeno_lines.begin() + i);
+			inner_lines.erase(inner_lines.begin() + i);
 			continue;	
 		}
 
@@ -453,10 +451,10 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	int phi_sample_cnt = 0, d_sample_cnt = 0;
 
 	//calculate the mean of the vote (TODO:weighted average?)
-	for(size_t i = 0; i < inner_xeno_lines.size(); i++) {
+	for(size_t i = 0; i < inner_lines.size(); i++) {
 		float phi_i, d_i;
-		phi_i = inner_xeno_lines.at(i).phi;
-		d_i = inner_xeno_lines.at(i).d;
+		phi_i = inner_lines.at(i).phi;
+		d_i = inner_lines.at(i).d;
 
 		if(phi_i >= phi_low_bound && phi_i <= phi_up_bound) {
 			phi_mean += phi_i;
@@ -469,10 +467,10 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 		}
 	}
 
-	for(size_t i = 0; i < outer_xeno_lines.size(); i++) {
+	for(size_t i = 0; i < outer_lines.size(); i++) {
 		float phi_i, d_i;
-		phi_i = outer_xeno_lines.at(i).phi;
-		d_i = outer_xeno_lines.at(i).d;
+		phi_i = outer_lines.at(i).phi;
+		d_i = outer_lines.at(i).d;
 
 		if(phi_i >= phi_low_bound && phi_i <= phi_up_bound) {
 			phi_mean += phi_i;
