@@ -3,7 +3,6 @@ CC=g++
 
 #OpenCV 3
 CFLAGS=`pkg-config opencv --cflags` `pkg-config opencv --libs`
-LDFLAGS:=
 
 CFLAGS+=-I./src
 SRC+=src/main.cpp \
@@ -13,7 +12,7 @@ SRC+=src/main.cpp \
 all:$(EXECUTABLE)
 
 $(EXECUTABLE):$(SRC)
-	$(CC) $< $(LDFLAGS) $(CFLAGS) -o $@ $(SRC)
+	$(CC) $(SRC) $(LDFLAGS) $(CFLAGS) -o $@
 
 clean:
 	rm -rf $(EXECUTABLE)
