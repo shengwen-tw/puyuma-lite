@@ -128,6 +128,7 @@ void draw_segment_side(cv::Mat& lane_mark_image, vector<segment_t>& lane_segment
 	}
 }
 
+/* visualization utilities */
 void draw_bird_view_image(cv::Mat& original_image, cv::Mat& bird_view_image)
 {
 	warpPerspective(original_image, bird_view_image, *H, original_image.size());
