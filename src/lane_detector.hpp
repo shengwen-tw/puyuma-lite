@@ -19,6 +19,9 @@ using namespace std;
 #define L_Y 2.5
 #define W 16.5
 
+/* camera geometry parameter */
+#define CAMERA_TO_CENTER 10.0 //[cm]
+
 /* parameters of historgram filter */
 #define DELTA_PHI 2.0 //[degree]
 #define DELTA_D 2.0 //[cm]
@@ -37,6 +40,24 @@ using namespace std;
 #define SIDE_DETECT_PIXEL_CNT 20
 #define SIDE_DETECT_THREDHOLD 14
 
+enum SEGMENT_COLOR {WHITE, YELLOW, RED, UNKNOWN_COLOR};
+enum {LEFT_EDGE, RIGHT_EDGE, UNKNOWN_SIDE};
+
+typedef struct {
+	int side;
+
+	struct {
+		float x1, y1;
+		float x2, y2;
+	} untransformed;
+
+	float x1, y1;
+	float x2, y2;
+
+	float d, phi;
+} segment_t;
+
+void lane_estimator_init();
 bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi);
 
 #endif

@@ -10,6 +10,8 @@ int main()
 	cv::Mat raw_image;
 	float d, phi;
 
+	lane_estimator_init();
+
 	lane_estimate(raw_image, d, phi);
 
 	return 0;
