@@ -7,7 +7,8 @@ CFLAGS=`pkg-config opencv --cflags` `pkg-config opencv --libs`
 CFLAGS+=-I./src
 SRC+=src/main.cpp \
 	src/lane_detector.cpp \
-	src/common.cpp
+	src/common.cpp \
+	src/self_driving.cpp
 
 #################################################################
 all:$(EXECUTABLE)
