@@ -1,3 +1,5 @@
+## Prerequisite
+
 ### 1. Install OpenCV 3.4.6
 
 ```
@@ -13,7 +15,7 @@ make -j4
 sudo make install
 ```
 
-### 2.Install Raspicam
+### 2. Install Raspicam
 
 ```
 git clone https://github.com/cedricve/raspicam.git
@@ -24,7 +26,7 @@ cmake ..
 sudo make install
 ```
 
-### 3.Install WiringPi
+### 3. Install WiringPi
 
 ```
 git clone git://git.drogon.net/wiringPi
