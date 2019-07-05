@@ -1,5 +1,11 @@
 ## Prerequisite
 
+### 0. Dependencies
+
+```
+sudo apt-get install qt5-default
+```
+
 ### 1. Install OpenCV 3.4.6
 
 ```
