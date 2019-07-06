@@ -26,7 +26,7 @@ void greeting(int argc, char **argv)
 		} else {
 			goto help;
 		}
-	} else if(strcmp(argv[1], "-c") == 0) {
+	} else if(argc == 3 && (strcmp(argv[1], "-c") == 0)) {
 		if(strcmp(argv[2], "intrinsic") == 0) {
 			execute_mode = MODE_INTRINSIC_CALIB;
 			cout << "intrinsic calibration mode.\n";
