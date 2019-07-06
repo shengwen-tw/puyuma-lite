@@ -117,8 +117,8 @@ void estimate_intrinsic_parameters(void)
 	     << ", " << dist_coeffs.at<double>(0, 4) << "]\n";
 
 	/* save calibration result into yaml */
-	ofstream fout("intrinsic_calibration.yaml");
-	fout << "camera_matrix: |\n  ["
+	ofstream fout("intrinsic.yaml");
+	fout << "camera_matrix: \n  ["
 	     << fixed << setprecision(5);
 	for(int i = 0; i < 3; i++) {
 		fout << camera_matrix.at<double>(i, 0)
@@ -137,15 +137,14 @@ void estimate_intrinsic_parameters(void)
 	     << ", " << dist_coeffs.at<double>(0, 2)
 	     << ", " << dist_coeffs.at<double>(0, 3)
 	     << ", " << dist_coeffs.at<double>(0, 4) << "]";
+
+	cout << "calibration succeeded, press ctrl+c to leave.\n";
 }
 
 
 void undistort_image(const Mat &src, Mat &dst)
 {
 	Mat map1, map2; 
-
-	calibrateCamera(object_3d_points, image_2d_points, image_size, camera_matrix,
-			dist_coeffs, rvecs, tvecs);  
 	initUndistortRectifyMap(camera_matrix, dist_coeffs, Mat(), Mat(),
 				image_size, CV_32F, map1, map2); 
 	remap(src, dst, map1, map2, INTER_LINEAR); 
