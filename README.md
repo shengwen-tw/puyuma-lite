@@ -3,7 +3,7 @@
 ### 0. Dependencies
 
 ```
-sudo apt-get install qt5-default
+sudo apt-get install qt5-default cmake vim
 ```
 
 ### 1. Install OpenCV 3.4.6
@@ -38,4 +38,29 @@ sudo make install
 git clone git://git.drogon.net/wiringPi
 cd WiringPi
 ./build
+```
+### 4. Setup swap memory (recommendation)
+
+Install dphys-swapfile
+
+```
+sudo apt install dphys-swapfile
+```
+
+Setup the swap memory size
+
+```
+sudo vim /etc/dphys-swapfile
+```
+
+add (or edit)
+
+```
+CONF_SWAPSIZE=4096
+```
+
+restart swap memory service
+
+```
+/etc/init.d/dphys-swapfile restart
 ```
