@@ -1,8 +1,10 @@
 #include <cstdio>
 #include <opencv2/opencv.hpp>
+#include <raspicam/raspicam_cv.h>
 
 #include "lane_detector.hpp"
 #include "self_driving.hpp"
+#include "intrinsic_calibration.hpp"
 
 using namespace cv;
 
@@ -30,6 +32,7 @@ void greeting(int argc, char **argv)
 		if(strcmp(argv[2], "intrinsic") == 0) {
 			execute_mode = MODE_INTRINSIC_CALIB;
 			cout << "intrinsic calibration mode.\n";
+			intrinsic_calibration();
 		} else if(strcmp(argv[2], "extrinsic") == 0) {
 			execute_mode = MODE_EXTRINSIC_CALIB;
 			cout << "extrinsic calibration mode.\n";
@@ -52,6 +55,8 @@ void greeting(int argc, char **argv)
 int main(int argc, char **argv)
 {
 	greeting(argc, argv);
+
+	raspicam::RaspiCam_Cv camera;
 
 	float d, phi;
 

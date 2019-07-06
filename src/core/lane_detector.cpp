@@ -498,4 +498,6 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	final_phi = phi_mean;
 
 	//XXX: publish the final estimated (d, phi) info
+
+	return true;
 }

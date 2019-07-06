@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
 
+#include "camera.hpp"
+
 #define IMAGE_WIDTH  640
 #define IMAGE_HEIGHT 480
 
@@ -15,8 +17,6 @@
 using namespace std;
 using namespace cv;
 
-NAMESPACE_START(intrinsic_calibration)
-
 /* parameters of the camera calibrator */
 vector<string> image_names;
 //board size and image_size
@@ -25,13 +25,13 @@ Size image_size = Size(IMAGE_WIDTH, IMAGE_HEIGHT);
 vector<vector<Point2f>> image_2d_points;
 vector<vector<Point3f>> object_3d_points;
 //intrinsic parameters
-Mat camera_matrix, dist_coeffs;
-vector<Mat> rvecs, tvecs;
+static Mat camera_matrix, dist_coeffs;
+static vector<Mat> rvecs, tvecs;
 
 int image_count = 1;
 bool checkerboard_detected = false;
 
-cv::Mat raw_image;
+static cv::Mat raw_image;
 
 void set_img_filenames(void)
 {
@@ -170,11 +170,9 @@ void on_click_callback(int event, int x, int y, int flags, void* param)
 
 void intrinsic_calibration(void)
 {
-	cv::VideoCapture camera(0);
-	camera.set(CV_CAP_PROP_FRAME_WIDTH, IMAGE_WIDTH);
-	camera.set(CV_CAP_PROP_FRAME_HEIGHT, IMAGE_HEIGHT);
-
-	if(camera.isOpened() == false) {
+	raspicam::RaspiCam_Cv camera;
+	if(camera_setup(camera, IMAGE_WIDTH, IMAGE_HEIGHT) == false) {
+		cout << "failed to open the camera. - camera_setup()\n";
 		exit(0);
 	}
 
@@ -187,7 +185,8 @@ void intrinsic_calibration(void)
 	vector<Point2f> corners;
 
 	while(image_count <= 15) {
-		camera >> raw_image;
+		camera.grab();
+		camera.retrieve(raw_image);
 
 		Mat board_visualized_img;
 
@@ -206,7 +205,8 @@ void intrinsic_calibration(void)
 	estimate_intrinsic_parameters();
 
 	while(1) {
-		camera >> raw_image;
+		camera.grab();
+		camera.retrieve(raw_image);
 
 		undistort_image(raw_image, undistorted_image);
 		imshow("intrinsic calibration", undistorted_image);
@@ -216,5 +216,3 @@ void intrinsic_calibration(void)
 	destroyAllWindows();
 	exit(0);
 }
-
-NAMESPACE_END()
