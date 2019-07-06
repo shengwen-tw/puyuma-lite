@@ -3,7 +3,7 @@
 ### 0. Dependencies
 
 ```
-sudo apt-get install qt5-default cmake vim
+sudo apt-get install qt5-default cmake vim libyaml-cpp-dev
 ```
 
 ### 1. Install OpenCV 3.4.6
