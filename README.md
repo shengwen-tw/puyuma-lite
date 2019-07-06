@@ -64,3 +64,15 @@ restart swap memory service
 ```
 /etc/init.d/dphys-swapfile restart
 ```
+
+## Calibration
+
+### 1. Intrinsic calibration
+
+```
+ssh -Y pi@HOSTNAME
+
+cd puyuma/
+
+./puyuma -c intrinsic
+```
