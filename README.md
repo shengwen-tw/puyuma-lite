@@ -5,7 +5,7 @@
 ```
 sudo apt-get install qt5-default cmake vim libyaml-cpp-dev
 ```
-### 1. Setup swap memory (recommendation)
+### 1. Setup swap memory (highly recommended for Raspberry Pi)
 
 Install dphys-swapfile
 
