@@ -3,8 +3,8 @@
 
 using namespace std;
 
-#define IMAGE_WIDTH 320.0 //[pixel]
-#define IMAGE_HEIGHT 240.0
+#define IMAGE_WIDTH 320 //[pixel]
+#define IMAGE_HEIGHT 240
 
 #define SEMI_IMAGE_WIDTH ((int)IMAGE_WIDTH / 2)
 #define SEMI_IMAGE_HEIGHT ((int)IMAGE_HEIGHT/ 2)
