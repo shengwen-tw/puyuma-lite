@@ -1,37 +1,34 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
 
-#define IMAGE_WIDTH  640
-#define IMAGE_HEIGHT 480
+#include "lane_detector.hpp"
+#include "camera.hpp"
 
-#define BOARD_WIDTH  6
-#define BOARD_HEIGHT 8
+#define SQUARE_SIZE  0.29
+
+#define CALIB_BOARD_WIDTH  6
+#define CALIB_BOARD_HEIGHT 8
 
 #define IMG_SAMPLE_SIZE 15
-
-#define NAMESPACE_START(NAME) namespace NAME {
-#define NAMESPACE_END(...) }
 
 using namespace std;
 using namespace cv;
 
-NAMESPACE_START(intrinsic_calibration)
-
 /* parameters of the camera calibrator */
 vector<string> image_names;
 //board size and image_size
-Size board_size = Size(BOARD_WIDTH, BOARD_HEIGHT);
+Size board_size = Size(CALIB_BOARD_WIDTH, CALIB_BOARD_HEIGHT);
 Size image_size = Size(IMAGE_WIDTH, IMAGE_HEIGHT);
 vector<vector<Point2f>> image_2d_points;
 vector<vector<Point3f>> object_3d_points;
 //intrinsic parameters
-Mat camera_matrix, dist_coeffs;
-vector<Mat> rvecs, tvecs;
+static Mat camera_matrix, dist_coeffs;
+static vector<Mat> rvecs, tvecs;
 
 int image_count = 1;
 bool checkerboard_detected = false;
 
-cv::Mat raw_image;
+static cv::Mat raw_image;
 
 void set_img_filenames(void)
 {
@@ -82,7 +79,8 @@ void estimate_intrinsic_parameters(void)
 
 	for(int i = 0; i < board_size.height; i++) {
 		for(int j = 0; j < board_size.width; j++){
-			_3d_corners.push_back(Point3f(i, j, 0.0f));
+			_3d_corners.push_back(Point3f((float)i * SQUARE_SIZE,
+						      (float)j * SQUARE_SIZE, 0.0f));
 		}
 	}
 
@@ -102,7 +100,7 @@ void estimate_intrinsic_parameters(void)
 
 	/* print calibration result to screen */
 	cout << "camera matrix:\n";
-	cout.precision(5);
+	cout << fixed << setprecision(5);
 	for(int i = 0; i < 3; i++) {
 		cout << "["  << camera_matrix.at<double>(i, 0)
 		     << ", " << camera_matrix.at<double>(i, 1)
@@ -117,8 +115,8 @@ void estimate_intrinsic_parameters(void)
 	     << ", " << dist_coeffs.at<double>(0, 4) << "]\n";
 
 	/* save calibration result into yaml */
-	ofstream fout("intrinsic_calibration.yaml");
-	fout << "camera_matrix: |\n  ["
+	ofstream fout("intrinsic.yaml");
+	fout << "camera_matrix: \n  ["
 	     << fixed << setprecision(5);
 	for(int i = 0; i < 3; i++) {
 		fout << camera_matrix.at<double>(i, 0)
@@ -137,15 +135,14 @@ void estimate_intrinsic_parameters(void)
 	     << ", " << dist_coeffs.at<double>(0, 2)
 	     << ", " << dist_coeffs.at<double>(0, 3)
 	     << ", " << dist_coeffs.at<double>(0, 4) << "]";
+
+	cout << "calibration succeeded, press ctrl+c to leave.\n";
 }
 
 
 void undistort_image(const Mat &src, Mat &dst)
 {
 	Mat map1, map2; 
-
-	calibrateCamera(object_3d_points, image_2d_points, image_size, camera_matrix,
-			dist_coeffs, rvecs, tvecs);  
 	initUndistortRectifyMap(camera_matrix, dist_coeffs, Mat(), Mat(),
 				image_size, CV_32F, map1, map2); 
 	remap(src, dst, map1, map2, INTER_LINEAR); 
@@ -170,11 +167,9 @@ void on_click_callback(int event, int x, int y, int flags, void* param)
 
 void intrinsic_calibration(void)
 {
-	cv::VideoCapture camera(0);
-	camera.set(CV_CAP_PROP_FRAME_WIDTH, IMAGE_WIDTH);
-	camera.set(CV_CAP_PROP_FRAME_HEIGHT, IMAGE_HEIGHT);
-
-	if(camera.isOpened() == false) {
+	raspicam::RaspiCam_Cv camera;
+	if(camera_setup(camera, IMAGE_WIDTH, IMAGE_HEIGHT) == false) {
+		cout << "failed to open the camera. - camera_setup()\n";
 		exit(0);
 	}
 
@@ -187,7 +182,8 @@ void intrinsic_calibration(void)
 	vector<Point2f> corners;
 
 	while(image_count <= 15) {
-		camera >> raw_image;
+		camera.grab();
+		camera.retrieve(raw_image);
 
 		Mat board_visualized_img;
 
@@ -206,7 +202,8 @@ void intrinsic_calibration(void)
 	estimate_intrinsic_parameters();
 
 	while(1) {
-		camera >> raw_image;
+		camera.grab();
+		camera.retrieve(raw_image);
 
 		undistort_image(raw_image, undistorted_image);
 		imshow("intrinsic calibration", undistorted_image);
@@ -216,5 +213,3 @@ void intrinsic_calibration(void)
 	destroyAllWindows();
 	exit(0);
 }
-
-NAMESPACE_END()

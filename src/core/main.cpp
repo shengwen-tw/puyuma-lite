@@ -1,8 +1,11 @@
 #include <cstdio>
 #include <opencv2/opencv.hpp>
+#include <raspicam/raspicam_cv.h>
 
+#include "camera.hpp"
 #include "lane_detector.hpp"
 #include "self_driving.hpp"
+#include "intrinsic_calibration.hpp"
 
 using namespace cv;
 
@@ -15,13 +18,23 @@ enum {
 
 int execute_mode;
 
-cv::Mat camera_matrix, distort_coffecient;
+cv::Mat camera_matrix, distort_coefficient;
+
+void load_settings()
+{
+	if(!load_intrinsic_calibration("./intrinsic.yaml", camera_matrix, distort_coefficient)) {
+		cout << "failed to load intrinsic parameters, please calibrate the "
+			"camera first.\n";
+		exit(0);
+	}
+}
 
 void greeting(int argc, char **argv)
 {
 	if(argc == 2) {
 		if(strcmp(argv[1], "run") == 0) {
 			execute_mode = MODE_SELF_DRIVING;
+			load_settings();
 			cout << "activating self-driving system...\n";
 		} else {
 			goto help;
@@ -30,6 +43,7 @@ void greeting(int argc, char **argv)
 		if(strcmp(argv[2], "intrinsic") == 0) {
 			execute_mode = MODE_INTRINSIC_CALIB;
 			cout << "intrinsic calibration mode.\n";
+			intrinsic_calibration();
 		} else if(strcmp(argv[2], "extrinsic") == 0) {
 			execute_mode = MODE_EXTRINSIC_CALIB;
 			cout << "extrinsic calibration mode.\n";
@@ -53,28 +67,36 @@ int main(int argc, char **argv)
 {
 	greeting(argc, argv);
 
-	float d, phi;
+	raspicam::RaspiCam_Cv camera;
+
+	if(camera_setup(camera, IMAGE_WIDTH, IMAGE_HEIGHT) == false) {
+		cout << "failed to open the camera. - camera_setup()\n";
+		exit(0);
+	}
 
 	lane_estimator_init();
 
+	cv::Mat raw_image, undistort_image;
+	float d = 0, phi = 0;
+
 	//self-driving system main loop
 	while(1) {
-		//TODO: retrieve image from pi camera
-		cv::Mat frame;
-		cv::Mat distort_image;
+		camera.grab();
+		camera.retrieve(raw_image);
 
-		//calibrate the fish-eye camera image before doing lane detection
-		cv::undistort(frame, distort_image, camera_matrix, distort_coffecient);
-
-		/* lane estimation */
-		float d = 0, phi = 0;
-		bool get_pose = lane_estimate(distort_image, d, phi);
+		/* image undistortion and rectifying */
+		cv::undistort(raw_image, undistort_image, camera_matrix, distort_coefficient);
+		cv::imshow("undistort image", undistort_image);
+		waitKey(30);
+#if 0
+		bool get_pose = lane_estimate(undistort_image, d, phi);
 
                 if(get_pose == true) {
                         self_driving_control(d, phi);
                 } else {
                         //halt_motor();
                 }
+#endif
 	}
 
 	return 0;
