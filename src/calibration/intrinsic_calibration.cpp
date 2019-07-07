@@ -5,6 +5,7 @@
 
 #define IMAGE_WIDTH  640
 #define IMAGE_HEIGHT 480
+#define SQUARE_SIZE  0.29
 
 #define BOARD_WIDTH  6
 #define BOARD_HEIGHT 8
@@ -82,7 +83,8 @@ void estimate_intrinsic_parameters(void)
 
 	for(int i = 0; i < board_size.height; i++) {
 		for(int j = 0; j < board_size.width; j++){
-			_3d_corners.push_back(Point3f(i, j, 0.0f));
+			_3d_corners.push_back(Point3f((float)i * SQUARE_SIZE,
+						      (float)j * SQUARE_SIZE, 0.0f));
 		}
 	}
 
