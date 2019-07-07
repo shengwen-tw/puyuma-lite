@@ -1,3 +1,20 @@
+# Puyuma-core
+
+Core components of self-driving car system, building a complete open source solution
+for low-cost hardware along with Linux real-time extensions.
+
+## Demo videos
+
+[![lane_following](https://github.com/ncku-ros2-research/xenobot/blob/master/materials/demo_video1.jpeg?raw=true)](https://www.youtube.com/watch?v=84MXc0_F61o)
+
+[![rviz](https://github.com/ncku-ros2-research/xenobot/blob/master/materials/demo_video2.jpeg?raw=true)](https://www.youtube.com/watch?v=XK602hzbORY&feature=youtu.be)
+
+Licensing
+---------
+`puyuma-core` is freely redistributable under the two-clause BSD License.
+Use of this source code is governed by a BSD-style license that can be found
+in the `LICENSE` file.
+
 ## Prerequisite
 
 ### 0. Dependencies
@@ -65,6 +82,15 @@ cd WiringPi
 ./build
 ```
 
+## Installation
+
+```
+git clone https://github.com/Puyuma/puyuma-core.git
+
+cd puyuma_core/
+
+make -j4
+```
 
 ## Calibration
 
