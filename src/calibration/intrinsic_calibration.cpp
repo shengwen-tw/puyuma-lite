@@ -1,19 +1,15 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
 
+#include "lane_detector.hpp"
 #include "camera.hpp"
 
-#define IMAGE_WIDTH  640
-#define IMAGE_HEIGHT 480
 #define SQUARE_SIZE  0.29
 
-#define BOARD_WIDTH  6
-#define BOARD_HEIGHT 8
+#define CALIB_BOARD_WIDTH  6
+#define CALIB_BOARD_HEIGHT 8
 
 #define IMG_SAMPLE_SIZE 15
-
-#define NAMESPACE_START(NAME) namespace NAME {
-#define NAMESPACE_END(...) }
 
 using namespace std;
 using namespace cv;
@@ -21,7 +17,7 @@ using namespace cv;
 /* parameters of the camera calibrator */
 vector<string> image_names;
 //board size and image_size
-Size board_size = Size(BOARD_WIDTH, BOARD_HEIGHT);
+Size board_size = Size(CALIB_BOARD_WIDTH, CALIB_BOARD_HEIGHT);
 Size image_size = Size(IMAGE_WIDTH, IMAGE_HEIGHT);
 vector<vector<Point2f>> image_2d_points;
 vector<vector<Point3f>> object_3d_points;
