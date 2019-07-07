@@ -85,11 +85,7 @@ int main(int argc, char **argv)
 		camera.retrieve(raw_image);
 
 		/* image undistortion and rectifying */
-		Mat map1, map2; 
-		initUndistortRectifyMap(camera_matrix, distort_coefficient, Mat(), Mat(),
-					Size(IMAGE_WIDTH, IMAGE_HEIGHT), CV_32F, map1, map2); 
-		remap(raw_image, undistort_image, map1, map2, INTER_LINEAR); 
-
+		cv::undistort(raw_image, undistort_image, camera_matrix, distort_coefficient);
 		cv::imshow("undistort image", undistort_image);
 		waitKey(30);
 #if 0
