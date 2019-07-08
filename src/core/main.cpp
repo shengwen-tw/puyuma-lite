@@ -6,6 +6,7 @@
 #include "lane_detector.hpp"
 #include "self_driving.hpp"
 #include "intrinsic_calibration.hpp"
+#include "extrinsic_calibration.hpp"
 
 using namespace cv;
 
@@ -46,6 +47,7 @@ void greeting(int argc, char **argv)
 			intrinsic_calibration();
 		} else if(strcmp(argv[2], "extrinsic") == 0) {
 			execute_mode = MODE_EXTRINSIC_CALIB;
+			extrinsic_calibration();
 			cout << "extrinsic calibration mode.\n";
 		} else if(strcmp(argv[2], "color") == 0) {
 			execute_mode = MODE_COLOR_CALIB;

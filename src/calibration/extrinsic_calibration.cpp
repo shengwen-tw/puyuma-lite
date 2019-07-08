@@ -8,11 +8,12 @@
 #include "lane_detector.hpp"
 #include "camera.hpp"
 
-#define OFFSET_X 40.0f
-#define OFFSET_Y 40.0f
-
-#define SQUARE_WIDTH 40.0f
-#define SQUARE_HEIGHT 40.0f
+#define EXT_CALIB_BOARD_W 6
+#define EXT_CALIB_BOARD_H 3
+#define SQUARE_WIDTH  ((float)IMAGE_WIDTH / (EXT_CALIB_BOARD_W + 1))
+#define SQUARE_HEIGHT ((float)IMAGE_HEIGHT / (EXT_CALIB_BOARD_H + 1))
+#define OFFSET_X SQUARE_WIDTH
+#define OFFSET_Y SQUARE_HEIGHT
 
 using namespace std;
 using namespace cv;
@@ -60,18 +61,21 @@ void mark_checkboard_corners(cv::Mat& rectified_image, std::vector<cv::Point2f>&
 
 bool estimate_homography(cv::Mat& rectified_image, cv::Mat& H)
 {
+	Mat gray_image;
+	cv::cvtColor(rectified_image, gray_image, cv::COLOR_BGR2GRAY);
+
 	std::vector<cv::Point2f> corners;
 
-	int board_w = 7, board_h = 5;
+	int board_w = EXT_CALIB_BOARD_W, board_h = EXT_CALIB_BOARD_H;
 	cv::Size board_size(board_w, board_h);
 
-	bool found = findChessboardCorners(rectified_image, board_size,
-					   corners, CV_CALIB_CB_ADAPTIVE_THRESH +
+	bool found = findChessboardCorners(gray_image, board_size, corners,
+					   CV_CALIB_CB_ADAPTIVE_THRESH +
 					   	    CV_CALIB_CB_FILTER_QUADS);
 
 	if(found == true) {
-		cornerSubPix(rectified_image, corners, cv::Size(11, 11), cv::Size(-1, -1),
-			cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+                TermCriteria param(TermCriteria::MAX_ITER + TermCriteria::EPS, 30, 0.1);
+                cornerSubPix(gray_image, corners, Size(5, 5), Size(-1, -1), param);
 
 		cout << "checkerboard is found.\n";
 	} else {
@@ -144,7 +148,7 @@ void extrinsic_calibration(void)
 		exit(0);
 	}
 
-        cv::Mat raw_image, grey_image, ground_projected_image;
+        cv::Mat raw_image, ground_projected_image;
 	cv::Mat H; //homography matrix
 
 	bool get_H = false;
