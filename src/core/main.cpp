@@ -10,15 +10,6 @@
 
 using namespace cv;
 
-enum {
-	MODE_SELF_DRIVING,
-	MODE_INTRINSIC_CALIB,
-	MODE_EXTRINSIC_CALIB,
-	MODE_COLOR_CALIB
-} Puyuma_Mode;
-
-int execute_mode;
-
 cv::Mat camera_matrix, distort_coefficient;
 
 void load_settings()
@@ -34,7 +25,6 @@ void greeting(int argc, char **argv)
 {
 	if(argc == 2) {
 		if(strcmp(argv[1], "run") == 0) {
-			execute_mode = MODE_SELF_DRIVING;
 			load_settings();
 			cout << "activating self-driving system...\n";
 		} else {
@@ -42,15 +32,12 @@ void greeting(int argc, char **argv)
 		}
 	} else if(argc == 3 && (strcmp(argv[1], "-c") == 0)) {
 		if(strcmp(argv[2], "intrinsic") == 0) {
-			execute_mode = MODE_INTRINSIC_CALIB;
 			cout << "intrinsic calibration mode.\n";
 			intrinsic_calibration();
 		} else if(strcmp(argv[2], "extrinsic") == 0) {
-			execute_mode = MODE_EXTRINSIC_CALIB;
 			extrinsic_calibration();
 			cout << "extrinsic calibration mode.\n";
 		} else if(strcmp(argv[2], "color") == 0) {
-			execute_mode = MODE_COLOR_CALIB;
 			cout << "color thresholding calibraion mode.\n";
 		} else {
 			goto help;
