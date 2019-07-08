@@ -34,7 +34,7 @@ bool load_intrinsic_calibration(string path, cv::Mat& camera_matrix,
 			 distort_array[2], distort_array[3], distort_array[4]);
 
 		cout << fixed << setprecision(5);
-		cout << "camera matrix:\n";
+		cout << "camera matrix (intrinsic parameters):\n";
 		for(int i = 0; i < 3; i++) {
 			cout << "["  << intrinsic_array[i * 3 + 0]
 		     	     << ", " << intrinsic_array[i * 3 + 1]

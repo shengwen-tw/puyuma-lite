@@ -6,6 +6,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "lane_detector.hpp"
+#include "intrinsic_calibration.hpp"
 #include "camera.hpp"
 
 #define EXT_CALIB_BOARD_W 6
@@ -45,43 +46,34 @@ void mark_checkboard_corners(cv::Mat& rectified_image, std::vector<cv::Point2f>&
 		cv::Point2f point = corners[i];
 
 		char index[50] = {'\0'};
-
 		sprintf(index, "%d", i);
-
 		cv::circle(marked_image, Point(point.x, point.y), 1, 
 			   Scalar(0, 0, 255), 2, CV_AA, 0);
 		putText(marked_image, index, Point(point.x, point.y + 10),
 			FONT_HERSHEY_DUPLEX, 1, Scalar(0, 255, 0));
 	}
 
-	cv::imshow("Extrinsic calibration", marked_image);
-
-	cvWaitKey(1);	
+	cv::imshow("ground points visualization", marked_image);
 }
 
 bool estimate_homography(cv::Mat& rectified_image, cv::Mat& H)
 {
+	int board_w = EXT_CALIB_BOARD_W, board_h = EXT_CALIB_BOARD_H;
+	cv::Size board_size(board_w, board_h);
+	std::vector<cv::Point2f> corners;
+
 	Mat gray_image;
 	cv::cvtColor(rectified_image, gray_image, cv::COLOR_BGR2GRAY);
 
-	std::vector<cv::Point2f> corners;
-
-	int board_w = EXT_CALIB_BOARD_W, board_h = EXT_CALIB_BOARD_H;
-	cv::Size board_size(board_w, board_h);
-
-	bool found = findChessboardCorners(gray_image, board_size, corners,
-					   CV_CALIB_CB_ADAPTIVE_THRESH +
-					   	    CV_CALIB_CB_FILTER_QUADS);
+	bool found = findChessboardCorners(gray_image, board_size, corners);
 
 	if(found == true) {
                 TermCriteria param(TermCriteria::MAX_ITER + TermCriteria::EPS, 30, 0.1);
                 cornerSubPix(gray_image, corners, Size(5, 5), Size(-1, -1), param);
-
 		cout << "checkerboard is found.\n";
 	} else {
 		cout << "cannot find the checkerboard, please adjust the light or "
 			"reduce the noise.\n";
-
 		return false;
 	}
 
@@ -108,32 +100,25 @@ bool estimate_homography(cv::Mat& rectified_image, cv::Mat& H)
 
 	for(int row = 0; row < board_h; row++) {
 		for(int column = 0; column < board_w; column++) {
-			ground_plane_points[board_w * board_h - (row * board_w + column) - 1] = cv::Point2f(float(column) * SQUARE_WIDTH + OFFSET_X, float(row) * SQUARE_HEIGHT + OFFSET_Y);
+			int gnd_point_index =
+				board_w * board_h - (row * board_w + column) - 1;
+
+			ground_plane_points[gnd_point_index] = 
+				cv::Point2f(float(column) * SQUARE_WIDTH + OFFSET_X,
+					    float(row) * SQUARE_HEIGHT + OFFSET_Y);
 
 			image_plane_points[row * board_w + column] =
-				corners[
-					(v_flipped ? board_h - 1 - row : row) * board_w +
-					(h_flipped ? board_w - 1 - column : column)
-				];
+				corners[(v_flipped ? board_h - 1 - row : row) * board_w +
+					(h_flipped ? board_w - 1 - column : column)];
 		}
 	}
 
-	mark_checkboard_corners(rectified_image, ground_plane_points);
-
 	H = cv::findHomography(image_plane_points, ground_plane_points, CV_RANSAC);
 
-	cv::Mat test;
-	warpPerspective(rectified_image, test, H, rectified_image.size());
+	Mat ground_image(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3, Scalar(0,0,0));
+	mark_checkboard_corners(ground_image, ground_plane_points);
 
-	imshow("ground projection", test);
-
-	waitKey(0);
-
-	cv::destroyWindow("ground projection");
-
-	cv::destroyWindow("Extrinsic calibration");
-
-	cout << "succeeded estimating the homography matrix.\n";
+	cout << "succeeded estimating homography matrix, press ctrl+c to leave.\n";
 
 	save_homography_matrix(H);
 
@@ -150,40 +135,41 @@ void extrinsic_calibration(void)
 
         cv::Mat raw_image, ground_projected_image;
 	cv::Mat H; //homography matrix
+	bool got_homography = false;
 
-	bool get_H = false;
+	Mat camera_matrix, distort_coefficient;
+
+	if(!load_intrinsic_calibration("./intrinsic.yaml", camera_matrix,
+				       distort_coefficient)) {
+		cout << "failed to load intrinsic parameters, please do "
+			"intrinsic calibration first.\n";
+		exit(0);
+	}
 
 	while(1) {
 		camera.grab();
 		camera.retrieve(raw_image);
 
-		cv::Mat camera_matrix = (cv::Mat1d(3, 3) << 136.106985, 0.000000, 166.663269,
-							0.000000, 136.627212, 105.393529,
-							0.000000, 0.000000, 1.000000);
-		cv::Mat distort_coffecient = (cv::Mat1d(1, 5) <<
-			-0.246384, 0.037375, 0.000300, -0.001282, 0.000000);
-
-		cv::Mat distort_image;
-		cv::undistort(raw_image, distort_image, camera_matrix, distort_coffecient);
+		//image undistortion
+		cv::Mat undistort_image;
+		cv::undistort(raw_image, undistort_image, camera_matrix, distort_coefficient);
 
 		//image sharpening
-		Mat temp_image;
-		cv::GaussianBlur(distort_image, temp_image, Size(0, 0) , 10);
-		cv::addWeighted(distort_image, 1.8, temp_image, -0.8, 0, distort_image) ;
+		Mat filtered_image;
+		cv::GaussianBlur(undistort_image, filtered_image, Size(0, 0) , 10);
+		cv::addWeighted(undistort_image, 1.8, filtered_image,
+				-0.8, 0, undistort_image) ;
 
-		if(get_H == false) {
-			if(estimate_homography(distort_image, H) == true) {
-				get_H = true;
-			}
+		if(got_homography == false) {
+			got_homography = estimate_homography(undistort_image, H);
 		} else {
-			warpPerspective(distort_image, ground_projected_image, H,
-					distort_image.size());
+			warpPerspective(undistort_image, ground_projected_image, H,
+					undistort_image.size());
 
-			cv::imshow("Homography image", ground_projected_image);
+			cv::imshow("ground projection", ground_projected_image);
 		}
 
-		cv::imshow("Raw image", distort_image);
-
+		cv::imshow("raw image", undistort_image);
 		waitKey(1);	
 	}
 }

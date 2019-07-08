@@ -99,7 +99,7 @@ void estimate_intrinsic_parameters(void)
 			camera_matrix, dist_coeffs, rvecs, tvecs);
 
 	/* print calibration result to screen */
-	cout << "camera matrix:\n";
+	cout << "camera matrix (intrinsic parameters):\n";
 	cout << fixed << setprecision(5);
 	for(int i = 0; i < 3; i++) {
 		cout << "["  << camera_matrix.at<double>(i, 0)
