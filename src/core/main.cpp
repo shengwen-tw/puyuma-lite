@@ -7,10 +7,13 @@
 #include "self_driving.hpp"
 #include "intrinsic_calibration.hpp"
 #include "extrinsic_calibration.hpp"
+#include "color_calibration.hpp"
 
 using namespace cv;
 
 cv::Mat camera_matrix, distort_coefficient;
+
+bool motor_halt = false;
 
 void load_settings()
 {
@@ -31,7 +34,6 @@ void greeting(int argc, char **argv)
 {
 	if(argc == 2) {
 		if(strcmp(argv[1], "run") == 0) {
-			load_settings();
 			cout << "activating self-driving system...\n";
 		} else {
 			goto help;
@@ -45,6 +47,8 @@ void greeting(int argc, char **argv)
 			cout << "extrinsic calibration mode.\n";
 		} else if(strcmp(argv[2], "color") == 0) {
 			cout << "color thresholding calibraion mode.\n";
+			hsv_color_thresholding_calibration();
+			motor_halt = true;
 		} else {
 			goto help;
 		}
@@ -61,9 +65,9 @@ void greeting(int argc, char **argv)
 int main(int argc, char **argv)
 {
 	greeting(argc, argv);
+	load_settings();
 
 	raspicam::RaspiCam_Cv camera;
-
 	if(camera_setup(camera, IMAGE_WIDTH, IMAGE_HEIGHT) == false) {
 		cout << "failed to open the camera. - camera_setup()\n";
 		exit(0);
@@ -83,7 +87,7 @@ int main(int argc, char **argv)
 		cv::undistort(raw_image, undistort_image, camera_matrix, distort_coefficient);
 		cv::imshow("undistort image", undistort_image);
 		waitKey(30);
-#if 0
+
 		bool get_pose = lane_estimate(undistort_image, d, phi);
 
                 if(get_pose == true) {
@@ -91,7 +95,6 @@ int main(int argc, char **argv)
                 } else {
                         //halt_motor();
                 }
-#endif
 	}
 
 	return 0;

@@ -15,11 +15,27 @@ double inner_threshold_h_max, inner_threshold_s_max, inner_threshold_v_max;
 
 float roi_offset_x, roi_offset_y;
 
+bool show_hsv_threshold_image = true;
+
 cv::Mat H;
 
 cv::Mat outer_hsv_image, inner_hsv_image;
 cv::Mat outer_threshold_image, inner_threshold_image;
 cv::Mat canny_image;
+
+void set_outer_hsv_color_thresholding(double o_h_min, double o_s_min, double o_v_min,
+				      double o_h_max, double o_s_max, double o_v_max)
+{
+	outer_threshold_h_min = o_h_min, outer_threshold_s_min = o_s_min, outer_threshold_v_min = o_v_min;
+	outer_threshold_h_max = o_h_max, outer_threshold_s_max = o_h_max, outer_threshold_v_max = o_v_max;
+}
+
+void set_inner_hsv_color_thresholding(double i_h_min, double i_s_min, double i_v_min,
+				      double i_h_max, double i_s_max, double i_v_max)
+{
+	inner_threshold_h_min = i_h_min, inner_threshold_s_min = i_s_min, inner_threshold_v_min = i_v_min;
+	inner_threshold_h_max = i_h_max, inner_threshold_s_max = i_h_max, inner_threshold_v_max = i_v_max;
+}
 
 bool load_extrinsic_calibration(string yaml_path)
 {
@@ -337,6 +353,10 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 		Scalar(inner_threshold_h_max, inner_threshold_s_max, inner_threshold_v_max),
 		inner_threshold_image
 	);
+	if(show_hsv_threshold_image == true) {
+		imshow("outer hsv threshold image", outer_threshold_image);
+		imshow("inner hsv threshold image", inner_threshold_image);
+	}
 
 	//canny edge detection
 	cv::Mat outer_gray_image, inner_gray_image;
