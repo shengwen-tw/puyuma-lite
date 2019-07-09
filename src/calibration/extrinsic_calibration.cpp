@@ -19,22 +19,31 @@
 using namespace std;
 using namespace cv;
 
-void save_homography_matrix(cv::Mat& H)
+void save_homography_matrix(cv::Mat& homography_matrix)
 {
-	cv::Mat _H;
-	H.copyTo(_H);
-
-	_H.convertTo(_H, CV_64F);
-
+	/* print calibration result to screen */
+	cout << "homography matrix (extrinsic parameters):\n";
+	cout << fixed << setprecision(5);
 	for(int i = 0; i < 3; i++) {
-#if 0
-		ROS_INFO("[%.5f %.5f %.5f]",
-			_H.at<double>(i, 0),
-			_H.at<double>(i, 1),
-			_H.at<double>(i, 2)
-		);
-#endif
+		cout << "["  << homography_matrix.at<double>(i, 0)
+		     << ", " << homography_matrix.at<double>(i, 1)
+		     << ", " << homography_matrix.at<double>(i, 2) << "]\n";
 	}
+
+	/* save calibration result into yaml */
+	ofstream fout("extrinsic.yaml");
+	fout << "extrinsic_matrix: \n  ["
+	     << fixed << setprecision(5);
+	for(int i = 0; i < 3; i++) {
+		fout << homography_matrix.at<double>(i, 0)
+		     << ", " << homography_matrix.at<double>(i, 1)
+		     << ", " << homography_matrix.at<double>(i, 2);
+
+		if(i < 2) {
+			fout << ",\n  ";
+		}
+	}
+	fout << "]\n";
 }
 
 void mark_checkboard_corners(cv::Mat& rectified_image, std::vector<cv::Point2f>& corners)
@@ -56,7 +65,7 @@ void mark_checkboard_corners(cv::Mat& rectified_image, std::vector<cv::Point2f>&
 	cv::imshow("ground points visualization", marked_image);
 }
 
-bool estimate_homography(cv::Mat& rectified_image, cv::Mat& H)
+bool estimate_homography(cv::Mat& rectified_image, cv::Mat& homography_matrix)
 {
 	int board_w = EXT_CALIB_BOARD_W, board_h = EXT_CALIB_BOARD_H;
 	cv::Size board_size(board_w, board_h);
@@ -113,14 +122,13 @@ bool estimate_homography(cv::Mat& rectified_image, cv::Mat& H)
 		}
 	}
 
-	H = cv::findHomography(image_plane_points, ground_plane_points, CV_RANSAC);
+	homography_matrix = cv::findHomography(image_plane_points, ground_plane_points, CV_RANSAC);
 
 	Mat ground_image(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3, Scalar(0,0,0));
 	mark_checkboard_corners(ground_image, ground_plane_points);
 
+	save_homography_matrix(homography_matrix);
 	cout << "succeeded estimating homography matrix, press ctrl+c to leave.\n";
-
-	save_homography_matrix(H);
 
 	return true;
 }
@@ -134,7 +142,7 @@ void extrinsic_calibration(void)
 	}
 
         cv::Mat raw_image, ground_projected_image;
-	cv::Mat H; //homography matrix
+	cv::Mat homography_matrix; //homography matrix
 	bool got_homography = false;
 
 	Mat camera_matrix, distort_coefficient;
@@ -161,9 +169,9 @@ void extrinsic_calibration(void)
 				-0.8, 0, undistort_image) ;
 
 		if(got_homography == false) {
-			got_homography = estimate_homography(undistort_image, H);
+			got_homography = estimate_homography(undistort_image, homography_matrix);
 		} else {
-			warpPerspective(undistort_image, ground_projected_image, H,
+			warpPerspective(undistort_image, ground_projected_image, homography_matrix,
 					undistort_image.size());
 
 			cv::imshow("ground projection", ground_projected_image);

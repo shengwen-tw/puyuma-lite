@@ -19,6 +19,12 @@ void load_settings()
 			"camera first.\n";
 		exit(0);
 	}
+
+	if(!load_extrinsic_calibration("./extrinsic.yaml")) {
+		cout << "failed to load extrinsic parameters, please calibrate the "
+			"camera first.\n";
+		exit(0);
+	}
 }
 
 void greeting(int argc, char **argv)

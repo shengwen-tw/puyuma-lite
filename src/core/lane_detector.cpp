@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <opencv2/opencv.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include "lane_detector.hpp"
 #include "common.hpp"
@@ -14,11 +15,40 @@ double inner_threshold_h_max, inner_threshold_s_max, inner_threshold_v_max;
 
 float roi_offset_x, roi_offset_y;
 
-cv::Mat* H; //pointer of homography transform matrix
+cv::Mat H;
 
 cv::Mat outer_hsv_image, inner_hsv_image;
 cv::Mat outer_threshold_image, inner_threshold_image;
 cv::Mat canny_image;
+
+bool load_extrinsic_calibration(string yaml_path)
+{
+	try {
+		YAML::Node yaml = YAML::LoadFile(yaml_path);
+
+		double extrinsic_array[9];
+
+		for(int i = 0; i < 9; i++) {
+			extrinsic_array[i] = yaml["extrinsic_matrix"][i].as<double>();
+		}
+
+		H = (cv::Mat1d(3, 3) <<
+			extrinsic_array[0], extrinsic_array[1], extrinsic_array[2],
+			extrinsic_array[3], extrinsic_array[4], extrinsic_array[5],
+			extrinsic_array[6], extrinsic_array[7], extrinsic_array[8]);
+
+		cout << fixed << setprecision(5);
+		cout << "homography matrix (extrinsic parameters):\n";
+		for(int i = 0; i < 3; i++) {
+			cout << "["  << extrinsic_array[i * 3 + 0]
+		     	     << ", " << extrinsic_array[i * 3 + 1]
+		     	     << ", " << extrinsic_array[i * 3 + 2] << "]\n";
+		}
+		return true;
+	} catch(...) {
+		return false;
+	}
+}
 
 /* input a lane segment and recognize whether it is the left side
    or the right side of the road lane mark */
@@ -131,7 +161,7 @@ void draw_segment_side(cv::Mat& lane_mark_image, vector<segment_t>& lane_segment
 /* visualization utilities */
 void draw_bird_view_image(cv::Mat& original_image, cv::Mat& bird_view_image)
 {
-	warpPerspective(original_image, bird_view_image, *H, original_image.size());
+	warpPerspective(original_image, bird_view_image, H, original_image.size());
 }
 
 void segments_homography_transform(vector<segment_t>& lines)
@@ -148,7 +178,7 @@ void segments_homography_transform(vector<segment_t>& lines)
 		point.y = lines.at(i).untransformed.y2 + roi_offset_y;
 		segment.push_back(point);
 
-		perspectiveTransform(segment, segment_transformed, *H);
+		perspectiveTransform(segment, segment_transformed, H);
 
 		lines.at(i).x1 = segment_transformed.at(0).x;
 		lines.at(i).y1 = segment_transformed.at(0).y;

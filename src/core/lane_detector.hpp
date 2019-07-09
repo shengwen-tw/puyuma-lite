@@ -57,6 +57,7 @@ typedef struct {
 	float d, phi;
 } segment_t;
 
+bool load_extrinsic_calibration(string yaml_path);
 void lane_estimator_init();
 bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi);
 
