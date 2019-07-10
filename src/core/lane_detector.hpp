@@ -57,6 +57,13 @@ typedef struct {
 	float d, phi;
 } segment_t;
 
+typedef struct {
+	vector<segment_t> *outer_lines, *inner_lines;
+
+	/* Pose */
+	float *d, *phi;
+} puyuma_state_t;
+
 void set_outer_hsv_color_thresholding(double o_h_min, double o_s_min, double o_v_min,
 				      double o_h_max, double o_s_max, double o_v_max);
 void set_inner_hsv_color_thresholding(double i_h_min, double i_s_min, double i_v_min,
