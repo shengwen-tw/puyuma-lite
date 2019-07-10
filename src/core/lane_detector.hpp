@@ -61,6 +61,7 @@ void set_outer_hsv_color_thresholding(double o_h_min, double o_s_min, double o_v
 				      double o_h_max, double o_s_max, double o_v_max);
 void set_inner_hsv_color_thresholding(double i_h_min, double i_s_min, double i_v_min,
 				      double i_h_max, double i_s_max, double i_v_max);
+void set_color_calib_mode(void);
 
 bool load_extrinsic_calibration(string yaml_path);
 void lane_estimator_init();

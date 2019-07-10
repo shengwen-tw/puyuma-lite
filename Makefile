@@ -5,6 +5,8 @@ CC=g++
 CFLAGS=`pkg-config opencv --cflags` `pkg-config opencv --libs`
 CFLAGS+=-lyaml-cpp -lraspicam -lraspicam_cv
 
+CFLAGS+=-std=c++11 -pthread
+
 CFLAGS+=-I./src/core
 CFLAGS+=-I./src/calibration
 

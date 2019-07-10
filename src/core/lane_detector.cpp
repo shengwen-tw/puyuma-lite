@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <thread>
 #include <opencv2/opencv.hpp>
 #include <yaml-cpp/yaml.h>
 
@@ -15,13 +16,24 @@ double inner_threshold_h_max, inner_threshold_s_max, inner_threshold_v_max;
 
 float roi_offset_x, roi_offset_y;
 
-bool show_hsv_threshold_image = true;
+bool color_calib_mode = false;
 
 cv::Mat H;
 
 cv::Mat outer_hsv_image, inner_hsv_image;
 cv::Mat outer_threshold_image, inner_threshold_image;
 cv::Mat canny_image;
+cv::Mat lane_mark_image(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3, Scalar(0,0,0));
+
+void set_color_calib_mode(void)
+{
+	color_calib_mode = true;
+}
+
+bool is_color_calib_mode(void)
+{
+	return color_calib_mode;
+}
 
 void set_outer_hsv_color_thresholding(double o_h_min, double o_s_min, double o_v_min,
 				      double o_h_max, double o_s_max, double o_v_max)
@@ -220,7 +232,7 @@ void gnd_to_image(float& pixel_x, float& pixel_y, float& gnd_x, float& gnd_y)
 	pixel_y = gnd_y * (IMAGE_HEIGHT / ((BOARD_HEIGHT + 2) * BOARD_BOX_SIZE));
 }
 
-void draw_region_of_interest(cv::Mat lane_mark_image)
+void draw_region_of_interest(cv::Mat &lane_mark_image)
 {
 	Point2f p1(0, roi_offset_y);
 	Point2f p2(IMAGE_WIDTH, roi_offset_y);
@@ -235,6 +247,21 @@ void draw_region_of_interest(cv::Mat lane_mark_image)
 	putText(lane_mark_image, "Region of interest",
 		Point(roi_offset_x + 10, IMAGE_HEIGHT - 10),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.7, Scalar(255, 128, 0));
+}
+
+void lane_mark_visualize(bool lane_detected, Mat undistorted_image)
+{
+	Mat temp_image; //for avoiding thread synchronizing probem
+	undistorted_image.copyTo(temp_image);
+
+	if(lane_detected == true) {
+	} else {
+		draw_region_of_interest(temp_image);
+		putText(temp_image, "Failed to estimate the lane", Point(10, 15),
+			FONT_HERSHEY_COMPLEX_SMALL, 0.7, Scalar(0, 0, 255));
+	}
+
+	temp_image.copyTo(lane_mark_image);
 }
 
 /* generate a lane segment vote for histogram filter */
@@ -353,7 +380,7 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 		Scalar(inner_threshold_h_max, inner_threshold_s_max, inner_threshold_v_max),
 		inner_threshold_image
 	);
-	if(show_hsv_threshold_image == true) {
+	if(is_color_calib_mode()) {
 		imshow("outer hsv threshold image", outer_threshold_image);
 		imshow("inner hsv threshold image", inner_threshold_image);
 	}
@@ -389,8 +416,10 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	edge_side_detect_whole_image(inner_cv_lines, inner_lines, inner_threshold_image);
 
 	if(outer_lines.size() == 0 && inner_lines.size() == 0) {
-		//send_visualize_image(raw_image, canny_image, outer_threshold_image,
-		//		     inner_threshold_image);
+		thread lane_visualize_thread(lane_mark_visualize, false, raw_image);
+		lane_visualize_thread.detach();
+		imshow("Puyuma self-driving system", lane_mark_image);
+
 		cout << "failed to estimate the lane [no segment is found]\n";
 		return false;
 	}
@@ -481,8 +510,10 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	}
 
 	if(vote_box[highest_vote_i][highest_vote_j] < HISTOGRAM_FILTER_THRESHOLD) {
-		//send_visualize_image(raw_image, canny_image, outer_threshold_image,
-		//		     inner_threshold_image);
+		thread lane_visualize_thread(lane_mark_visualize, false, raw_image);
+		lane_visualize_thread.detach();
+		imshow("Puyuma self-driving system", lane_mark_image);
+
 		cout << "failed to estimate the lane [less than threshold value]\n";
 		return false;
 	}
@@ -535,8 +566,10 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	}
 
 	if(phi_sample_cnt == 0 || d_sample_cnt == 0) {
-		//send_visualize_image(raw_image, canny_image, outer_threshold_image,
-		//		     inner_threshold_image);
+		thread lane_visualize_thread(lane_mark_visualize, false, raw_image);
+		lane_visualize_thread.detach();
+		imshow("Puyuma self-driving system", lane_mark_image);
+
 		cout << "failed to estimate the lane [sample count equals zero]\n";
 		return false;
 	}

@@ -85,8 +85,6 @@ int main(int argc, char **argv)
 
 		/* image undistortion and rectifying */
 		cv::undistort(raw_image, undistort_image, camera_matrix, distort_coefficient);
-		cv::imshow("undistort image", undistort_image);
-		waitKey(30);
 
 		bool get_pose = lane_estimate(undistort_image, d, phi);
 
@@ -95,6 +93,8 @@ int main(int argc, char **argv)
                 } else {
                         //halt_motor();
                 }
+
+		waitKey(1);
 	}
 
 	return 0;
