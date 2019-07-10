@@ -97,9 +97,31 @@ make -j4
 ### 1. Intrinsic calibration
 
 ```
-ssh -Y -C pi@HOSTNAME
+ssh -Y -C pi@HOSTNAME #login to Pi
 
 cd puyuma/
 
 ./puyuma -c intrinsic
+```
+
+
+### 2. Extrinsic calibration
+
+```
+ssh -Y -C pi@HOSTNAME #login to Pi
+
+cd puyuma/
+
+./puyuma -c extrinsic
+```
+
+
+### 3. Color thresholding calibration (lane mark identification)
+
+```
+ssh -Y -C pi@HOSTNAME #login to Pi
+
+cd puyuma/
+
+./puyuma -c color
 ```
