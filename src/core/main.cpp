@@ -13,7 +13,7 @@ using namespace cv;
 
 cv::Mat camera_matrix, distort_coefficient;
 
-bool motor_halt = false;
+bool color_calib = false;
 
 void load_settings()
 {
@@ -26,6 +26,12 @@ void load_settings()
 	if(!load_extrinsic_calibration("./extrinsic.yaml")) {
 		cout << "failed to load extrinsic parameters, please calibrate the "
 			"camera first.\n";
+		exit(0);
+	}
+
+	if(!load_color_calibration("./color_calibration.yaml") && color_calib == false) {
+		cout << "failed to load color calibration settings, please calibrate the "
+			"lane mark color thresholding value first.\n";
 		exit(0);
 	}
 }
@@ -48,7 +54,7 @@ void greeting(int argc, char **argv)
 		} else if(strcmp(argv[2], "color") == 0) {
 			cout << "color thresholding calibraion mode.\n";
 			hsv_color_thresholding_calibration();
-			motor_halt = true;
+			color_calib = true;
 		} else {
 			goto help;
 		}
