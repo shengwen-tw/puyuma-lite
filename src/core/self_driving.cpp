@@ -30,6 +30,6 @@ void self_driving_control(float d, float phi)
 	bound(MOTOR_PWM_MIN, MOTOR_PWM_MAX, pwm_left);
 	bound(MOTOR_PWM_MIN, MOTOR_PWM_MAX, pwm_right);
 
-        //set_motor_pwm(pwm_left, pwm_right);
+	set_motor_pwm(pwm_left, pwm_right);
 }
 

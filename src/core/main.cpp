@@ -3,6 +3,7 @@
 #include <raspicam/raspicam_cv.h>
 
 #include "camera.hpp"
+#include "motor.hpp"
 #include "lane_detector.hpp"
 #include "self_driving.hpp"
 #include "intrinsic_calibration.hpp"
@@ -34,6 +35,8 @@ void load_settings()
 			"lane mark color thresholding value first.\n";
 		exit(0);
 	}
+
+	load_motor_calibration("motor.yaml");
 }
 
 void greeting(int argc, char **argv)
@@ -73,6 +76,10 @@ int main(int argc, char **argv)
 	greeting(argc, argv);
 	load_settings();
 
+	motor_init();
+
+	test_motor();
+
 	raspicam::RaspiCam_Cv camera;
 	if(camera_setup(camera, IMAGE_WIDTH, IMAGE_HEIGHT) == false) {
 		cout << "failed to open the camera. - camera_setup()\n";
@@ -97,7 +104,7 @@ int main(int argc, char **argv)
                 if(get_pose == true) {
                         self_driving_control(d, phi);
                 } else {
-                        //halt_motor();
+                        halt_motor();
                 }
 
 		waitKey(1);
@@ -108,5 +115,5 @@ int main(int argc, char **argv)
 
 __attribute__((destructor))void end()
 {
-	//halt_motor();
+	halt_motor();
 }
