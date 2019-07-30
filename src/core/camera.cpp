@@ -5,6 +5,9 @@
 
 using namespace std;
 
+bool save_camera = false;
+cv::VideoWriter video_writer;
+
 bool load_intrinsic_calibration(string path, cv::Mat& camera_matrix,
 				cv::Mat& distort_coefficients)
 {
@@ -69,4 +72,15 @@ bool camera_setup(raspicam::RaspiCam_Cv& camera, int img_width, int img_height)
 	camera.set(CV_CAP_PROP_WHITE_BALANCE_BLUE_U, 10);
 
 	return camera.open();
+}
+
+void camera_saver_init(string save_path, int img_width, int img_height)
+{
+	cv::Size video_size = cv::Size(img_width, img_height);
+	video_writer.open("log.avi", CV_FOURCC('M', 'J', 'P', 'G'), 30, video_size);
+}
+
+void camera_save(cv::Mat &frame)
+{
+	video_writer.write(frame);
 }
