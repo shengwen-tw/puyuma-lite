@@ -20,10 +20,17 @@ SRC+=src/core/main.cpp \
 	src/core/self_driving.cpp \
 	src/core/motor.cpp
 
+OBJS=$(SRC:.cpp=.o)
+
 all:$(EXECUTABLE)
 
-$(EXECUTABLE):$(SRC)
-	$(CC) $(SRC) $(LDFLAGS) $(CFLAGS) -o $@
+$(EXECUTABLE): $(OBJS)
+	@echo "LD" $@
+	@$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@
+
+%.o: %.cpp
+	@echo "CC" $@
+	@$(CC) $(CFLAGS) -c $< $(LDFLAGS) -o $@
 
 clean:
-	rm -rf $(EXECUTABLE)
+	rm -rf $(EXECUTABLE) src/calibration/*.o  src/core/*.o
