@@ -10,6 +10,8 @@
 #include "extrinsic_calibration.hpp"
 #include "color_calibration.hpp"
 
+#define SAVE_RAW_IMG 0
+
 using namespace cv;
 
 cv::Mat camera_matrix, distort_coefficient;
@@ -75,16 +77,17 @@ int main(int argc, char **argv)
 {
 	greeting(argc, argv);
 	load_settings();
-
 	motor_init();
-
-	test_motor();
 
 	raspicam::RaspiCam_Cv camera;
 	if(camera_setup(camera, IMAGE_WIDTH, IMAGE_HEIGHT) == false) {
 		cout << "failed to open the camera. - camera_setup()\n";
 		exit(0);
 	}
+
+#if SAVE_RAW_IMG == 1
+	camera_saver_init("driver_record.avi", IMAGE_WIDTH, IMAGE_HEIGHT);
+#endif	
 
 	lane_estimator_init();
 
@@ -95,6 +98,10 @@ int main(int argc, char **argv)
 	while(1) {
 		camera.grab();
 		camera.retrieve(raw_image);
+
+#if SAVE_RAW_IMG == 1
+		camera_save(raw_image);
+#endif
 
 		/* image undistortion and rectifying */
 		cv::undistort(raw_image, undistort_image, camera_matrix, distort_coefficient);
