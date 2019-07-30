@@ -125,3 +125,13 @@ cd puyuma/
 
 ./puyuma -c color
 ```
+
+## Activate self-driving system
+
+```
+ssh -Y -C pi@HOSTNAME #login to Pi
+
+cd puyuma/
+
+./puyuma run
+```
