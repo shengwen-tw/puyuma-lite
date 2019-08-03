@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 
 		bool get_pose = lane_estimate(undistort_image, d, phi);
 
-                if(get_pose == true) {
+                if((get_pose == true) && (color_calib == false)) {
                         self_driving_control(d, phi);
                 } else {
                         halt_motor();
