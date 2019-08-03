@@ -1,7 +1,7 @@
 #ifndef __SELF_DRIVING_HPP__
 #define __SELF_DRIVING_HPP__
 
-#define THROTTLE_BASE 35 //35% of the throttle
+#define THROTTLE_BASE 45 //45% of the throttle
 
 typedef struct {
         float kp, ki, kd;
