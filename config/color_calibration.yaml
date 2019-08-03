@@ -1,0 +1,14 @@
+inner:
+  h_min: 0
+  h_max: 255
+  s_min: 113
+  s_max: 255
+  v_min: 150
+  v_max: 255
+outer:
+  h_min: 0
+  h_max: 158
+  s_min: 45
+  s_max: 179
+  v_min: 204
+  v_max: 255
