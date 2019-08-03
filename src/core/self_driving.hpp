@@ -9,4 +9,6 @@ typedef struct {
 
 void self_driving_control(float d, float phi);
 
+void load_pid_param(string yaml_path);
+
 #endif

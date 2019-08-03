@@ -39,6 +39,8 @@ void load_settings()
 	}
 
 	load_motor_calibration("motor.yaml");
+
+	load_pid_param("pid.yaml");
 }
 
 void greeting(int argc, char **argv)
