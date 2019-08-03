@@ -96,6 +96,8 @@ make -j4
 
 ### 1. Intrinsic calibration
 
+print out [intrinsic calibrating pattern](https://drive.google.com/open?id=0B2DQhcp-s6aoQ2J3LUVPR3FVZTA) in A4 and run the following cammands:
+
 ```
 ssh -Y -C pi@HOSTNAME #login to Pi
 
@@ -106,6 +108,8 @@ cd puyuma/
 
 
 ### 2. Extrinsic calibration
+
+print out [extrinsic calibrating pattern](https://drive.google.com/open?id=1J0H0wnwJJ62ytl2PEVEy6D1bAt3FOtRG) in A4 and run the following cammands:
 
 ```
 ssh -Y -C pi@HOSTNAME #login to Pi
