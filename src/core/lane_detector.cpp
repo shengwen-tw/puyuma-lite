@@ -370,14 +370,6 @@ bool generate_vote(segment_t& lane_segment, float& d, float& phi, int color)
 
 void lane_estimator_init()
 {
-	outer_threshold_h_min = 0; outer_threshold_h_max = 256;
-	outer_threshold_s_min = 0; outer_threshold_s_max = 256;
-	outer_threshold_v_min = 0; outer_threshold_v_max = 256;
-	inner_threshold_h_min = 0; inner_threshold_h_max = 256;
-	inner_threshold_s_min = 0; inner_threshold_s_max = 256;
-	inner_threshold_s_min = 0; inner_threshold_s_max = 256;
-	inner_threshold_v_min = 0; inner_threshold_v_max = 256;
-
 	roi_offset_x = 0;
 	roi_offset_y = IMAGE_HEIGHT / 2;
 }
@@ -622,7 +614,7 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	//TODO: spilt visiualization to another thread
 	lane_mark_visualize(true, raw_image, puyuma_state);
 	imshow("Puyuma self-driving system", lane_mark_image);
-	cout << "lane detected\n";
+	cout << "lane detected, d=" << final_d << ", phi=" << final_phi << "\n";
 
 	return true;
 }
