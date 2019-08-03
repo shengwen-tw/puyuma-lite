@@ -615,8 +615,14 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	puyuma_state.inner_lines = &inner_lines;
 	puyuma_state.d = &final_d;
 	puyuma_state.phi = &final_phi;
-	thread lane_visualize_thread(lane_mark_visualize, true, raw_image, puyuma_state);
-	lane_visualize_thread.detach();
+
+	//thread lane_visualize_thread(lane_mark_visualize, true, raw_image, puyuma_state);
+	//lane_visualize_thread.detach();
+
+	//TODO: spilt visiualization to another thread
+	lane_mark_visualize(true, raw_image, puyuma_state);
+	imshow("Puyuma self-driving system", lane_mark_image);
+	cout << "lane detected\n";
 
 	return true;
 }
