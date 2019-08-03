@@ -9,6 +9,10 @@ for low-cost hardware along with Linux real-time extensions.
 
 [![rviz](https://github.com/ncku-ros2-research/xenobot/blob/master/materials/demo_video2.jpeg?raw=true)](https://www.youtube.com/watch?v=XK602hzbORY&feature=youtu.be)
 
+## Report
+
+[Report of Puyuma self-driving system: Lane following algorithm](https://drive.google.com/open?id=1rKgdAhpr7M2tiiu-zpXKDYbxuNX_QqWz)
+
 Licensing
 ---------
 `puyuma-core` is freely redistributable under the two-clause BSD License.
