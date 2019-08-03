@@ -51,7 +51,7 @@ void self_driving_control(float d, float phi)
 {
 	int pwm_left, pwm_right;
 
-	float d_setpoint = -2.0f; //[cm]
+	float d_setpoint = -2.5f; //[cm]
 	float phi_setpoint = pid_control(d, d_setpoint, pid_d);
 
 	bound(PHI_MIN, PHI_MAX, phi_setpoint);
