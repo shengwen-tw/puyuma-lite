@@ -276,14 +276,14 @@ void lane_mark_visualize(bool lane_detected, Mat undistorted_image, puyuma_state
 		putText(temp_image, "Self-driving mode on", Point(10, 15),
 			FONT_HERSHEY_COMPLEX_SMALL, 0.7, Scalar(0, 255, 0));
 		char status[60];
-		sprintf(status, "d=%.1fcm,phi=%.1fdegree", *puyuma_state.d, *puyuma_state.phi);
+		sprintf(status, "d=%.1fcm,phi=%.1fdegree", puyuma_state.d, puyuma_state.phi);
 		putText(temp_image, status, Point(10, 40), FONT_HERSHEY_COMPLEX_SMALL, 0.7, Scalar(0, 255, 0));
 
-		mark_lane(temp_image, *puyuma_state.outer_lines, Scalar(0, 0, 255), Scalar(255, 0, 0),  Scalar(0, 255, 0));
-		mark_lane(temp_image, *puyuma_state.inner_lines, Scalar(255, 0, 0), Scalar(0, 0, 255),  Scalar(0, 255, 0));
+		mark_lane(temp_image, puyuma_state.outer_lines, Scalar(0, 0, 255), Scalar(255, 0, 0),  Scalar(0, 255, 0));
+		mark_lane(temp_image, puyuma_state.inner_lines, Scalar(255, 0, 0), Scalar(0, 0, 255),  Scalar(0, 255, 0));
 
-		draw_segment_side(lane_mark_image, *puyuma_state.outer_lines);
-		draw_segment_side(lane_mark_image, *puyuma_state.inner_lines);
+		draw_segment_side(lane_mark_image, puyuma_state.outer_lines);
+		draw_segment_side(lane_mark_image, puyuma_state.inner_lines);
 	} else {
 		putText(temp_image, "Failed to estimate the lane", Point(10, 15),
 			FONT_HERSHEY_COMPLEX_SMALL, 0.7, Scalar(0, 0, 255));
@@ -603,18 +603,18 @@ bool lane_estimate(cv::Mat& raw_image, float& final_d, float& final_phi)
 	final_phi = phi_mean;
 
 	/* lane mark visualization */
-	puyuma_state.outer_lines = &outer_lines;
-	puyuma_state.inner_lines = &inner_lines;
-	puyuma_state.d = &final_d;
-	puyuma_state.phi = &final_phi;
+	puyuma_state.outer_lines = outer_lines;
+	puyuma_state.inner_lines = inner_lines;
+	puyuma_state.d = final_d;
+	puyuma_state.phi = final_phi;
 
 	//thread lane_visualize_thread(lane_mark_visualize, true, raw_image, puyuma_state);
 	//lane_visualize_thread.detach();
 
 	//TODO: spilt visiualization to another thread
-	//lane_mark_visualize(true, raw_image, puyuma_state);
-	//imshow("Puyuma self-driving system", lane_mark_image);
-	//cout << "lane detected, d=" << final_d << ", phi=" << final_phi << "\n";
+	lane_mark_visualize(true, raw_image, puyuma_state);
+	imshow("Puyuma self-driving system", lane_mark_image);
+	cout << "lane detected, d=" << final_d << ", phi=" << final_phi << "\n";
 
 	return true;
 }
